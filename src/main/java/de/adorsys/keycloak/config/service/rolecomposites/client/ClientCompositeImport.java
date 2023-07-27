@@ -52,19 +52,23 @@ public class ClientCompositeImport {
             String clientId = clientCompositesByClients.getKey();
             List<String> clientCompositesByClient = clientCompositesByClients.getValue();
 
-            updateClientComposites(realmName, roleClientId, roleName, clientId, clientCompositesByClient);
+            ClientUpdateConfig clientUpdateConfig = new ClientUpdateConfig(realmName, roleClientId, roleName, clientId);
+            updateClientComposites(clientUpdateConfig, clientCompositesByClient);
         }
 
         removeClientRoleClientComposites(realmName, roleClientId, roleName, clientComposites);
     }
 
     private void updateClientComposites(
-            String realmName,
-            String roleClientId,
-            String roleName,
-            String clientId,
+            ClientUpdateConfig clientUpdateConfig,
             List<String> composites
     ) {
+
+        String realmName = clientUpdateConfig.getRealmName();
+        String roleClientId = clientUpdateConfig.getRoleClientId();
+        String roleName = clientUpdateConfig.getRoleName();
+        String clientId = clientUpdateConfig.getClientId();
+
         List<String> existingClientCompositeNames = findClientRoleClientCompositeNames(realmName, roleClientId, roleName, clientId);
 
         if (Objects.equals(existingClientCompositeNames, composites)) {
