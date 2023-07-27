@@ -96,14 +96,14 @@ public class IdentityProviderMapperRepository {
                 .update(identityProviderMapperToUpdate.getId(), identityProviderMapperToUpdate);
     }
 
-    public void delete(String realmName, IdentityProviderMapperRepresentation identityProviderMapperToDelete) {
+    public void delete(String realmName, IdentityProviderMapperRepresentation mapperToDelete) {
         IdentityProvidersResource identityProvidersResource = realmRepository
                 .getResource(realmName).identityProviders();
 
-        String identityProviderAlias = identityProviderMapperToDelete.getIdentityProviderAlias();
+        String identityAlias = mapperToDelete.getIdentityProviderAlias();
 
         identityProvidersResource
-                .get(identityProviderAlias)
-                .delete(identityProviderMapperToDelete.getId());
+                .get(identityAlias)
+                .delete(mapperToDelete.getId());
     }
 }
