@@ -75,7 +75,6 @@ public class RoleImportService {
         if (roles == null) return;
 
         String realmName = realmImport.getRealm();
-
         boolean realmRoleInImport = roles.getRealm() != null;
         boolean clientRoleInImport = roles.getClient() != null;
 
@@ -90,22 +89,10 @@ public class RoleImportService {
         }
 
         if (importConfigProperties.getManaged().getRole() == ImportConfigProperties.ImportManagedProperties.ImportManagedPropertiesValues.FULL) {
-            if (realmRoleInImport) {
-                deleteRealmRolesMissingInImport(realmName, roles.getRealm(), existingRealmRoles);
-            }
-            if (clientRoleInImport) {
-                deleteClientRolesMissingInImport(realmName, roles.getClient(), existingClientRoles);
-            }
+            deleteRolesMissingInImport(realmName, roles, existingRealmRoles, existingClientRoles);
         }
 
-
-        if (realmRoleInImport) {
-            createOrUpdateRealmRoles(realmName, roles.getRealm(), existingRealmRoles);
-        }
-        if (clientRoleInImport) {
-            createOrUpdateClientRoles(realmName, roles.getClient(), existingClientRoles);
-        }
-
+        createOrUpdateRoles(realmName, roles, existingRealmRoles, existingClientRoles);
 
         if (realmRoleInImport) {
             realmRoleCompositeImport.update(realmName, roles.getRealm());
@@ -114,6 +101,29 @@ public class RoleImportService {
             clientRoleCompositeImport.update(realmName, roles.getClient());
         }
     }
+
+    private void deleteRolesMissingInImport(String realmName, RolesRepresentation roles,
+                                            List<RoleRepresentation> existingRealmRoles,
+                                            Map<String, List<RoleRepresentation>> existingClientRoles) {
+        if (roles.getRealm() != null) {
+            deleteRealmRolesMissingInImport(realmName, roles.getRealm(), existingRealmRoles);
+        }
+        if (roles.getClient() != null) {
+            deleteClientRolesMissingInImport(realmName, roles.getClient(), existingClientRoles);
+        }
+    }
+
+    private void createOrUpdateRoles(String realmName, RolesRepresentation roles,
+                                     List<RoleRepresentation> existingRealmRoles,
+                                     Map<String, List<RoleRepresentation>> existingClientRoles) {
+        if (roles.getRealm() != null) {
+            createOrUpdateRealmRoles(realmName, roles.getRealm(), existingRealmRoles);
+        }
+        if (roles.getClient() != null) {
+            createOrUpdateClientRoles(realmName, roles.getClient(), existingClientRoles);
+        }
+    }
+
 
     private void createOrUpdateRealmRoles(
             String realmName,
