@@ -20,6 +20,8 @@
 
 package de.adorsys.keycloak.config.repository;
 
+import de.adorsys.keycloak.config.exception.ImportProcessingException;
+import de.adorsys.keycloak.config.model.RealmImport;
 import org.keycloak.admin.client.resource.AuthenticationManagementResource;
 import org.keycloak.representations.idm.AuthenticatorConfigRepresentation;
 import org.keycloak.representations.idm.RealmRepresentation;
@@ -77,5 +79,25 @@ public class AuthenticatorConfigRepository {
     public List<AuthenticatorConfigRepresentation> getAll(String realmName) {
         RealmRepresentation realmExport = realmRepository.partialExport(realmName, false, false);
         return realmExport.getAuthenticatorConfig();
+    }
+
+    public void updateAuthenticator(
+            RealmImport realmImport,
+            AuthenticatorConfigRepresentation authenticatorConfigRepresentation
+    ) {
+        List<AuthenticatorConfigRepresentation> existingAuthConfigs = getConfigsByAlias(realmImport.getRealm(),
+                authenticatorConfigRepresentation.getAlias());
+
+        if (existingAuthConfigs.isEmpty()) {
+            throw new ImportProcessingException(String.format(
+                    "Authenticator Config '%s' not found. Config must be used in execution",
+                    authenticatorConfigRepresentation.getAlias()
+            ));
+        }
+
+        existingAuthConfigs.forEach(existingAuthConfig -> {
+            authenticatorConfigRepresentation.setId(existingAuthConfig.getId());
+            update(realmImport.getRealm(), authenticatorConfigRepresentation);
+        });
     }
 }
