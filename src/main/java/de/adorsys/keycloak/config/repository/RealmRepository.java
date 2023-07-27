@@ -21,6 +21,7 @@
 package de.adorsys.keycloak.config.repository;
 
 import de.adorsys.keycloak.config.exception.KeycloakRepositoryException;
+import de.adorsys.keycloak.config.model.RealmImport;
 import de.adorsys.keycloak.config.provider.KeycloakProvider;
 import de.adorsys.keycloak.config.util.ResponseUtil;
 import org.keycloak.admin.client.Keycloak;
@@ -105,5 +106,18 @@ public class RealmRepository {
 
     public void removeDefaultOptionalClientScope(String realmName, String scopeId) {
         getResource(realmName).removeDefaultOptionalClientScope(scopeId);
+    }
+
+    public void setupRealmFlow(RealmImport realmImport) {
+        RealmRepresentation realm = get(realmImport.getRealm());
+
+        realm.setBrowserFlow(realmImport.getBrowserFlow());
+        realm.setDirectGrantFlow(realmImport.getDirectGrantFlow());
+        realm.setClientAuthenticationFlow(realmImport.getClientAuthenticationFlow());
+        realm.setDockerAuthenticationFlow(realmImport.getDockerAuthenticationFlow());
+        realm.setRegistrationFlow(realmImport.getRegistrationFlow());
+        realm.setResetCredentialsFlow(realmImport.getResetCredentialsFlow());
+
+        update(realm);
     }
 }

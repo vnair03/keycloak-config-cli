@@ -31,7 +31,6 @@ import de.adorsys.keycloak.config.util.AuthenticationFlowUtil;
 import de.adorsys.keycloak.config.util.CloneUtil;
 import org.keycloak.representations.idm.AuthenticationExecutionInfoRepresentation;
 import org.keycloak.representations.idm.AuthenticationFlowRepresentation;
-import org.keycloak.representations.idm.RealmRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,16 +101,7 @@ public class AuthenticationFlowsImportService {
     }
 
     private void setupFlowsInRealm(RealmImport realmImport) {
-        RealmRepresentation realm = realmRepository.get(realmImport.getRealm());
-
-        realm.setBrowserFlow(realmImport.getBrowserFlow());
-        realm.setDirectGrantFlow(realmImport.getDirectGrantFlow());
-        realm.setClientAuthenticationFlow(realmImport.getClientAuthenticationFlow());
-        realm.setDockerAuthenticationFlow(realmImport.getDockerAuthenticationFlow());
-        realm.setRegistrationFlow(realmImport.getRegistrationFlow());
-        realm.setResetCredentialsFlow(realmImport.getResetCredentialsFlow());
-
-        realmRepository.update(realm);
+        realmRepository.setupRealmFlow(realmImport);
     }
 
     /**
