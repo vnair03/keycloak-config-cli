@@ -132,6 +132,28 @@ public class KeycloakImportProvider {
         return new KeycloakImport(realmImports);
     }
 
+    // Extract the condition into a method with a descriptive name
+    private boolean shouldIncludeFile(File file) {
+        return !isIncludeHiddenFilesEnabled() && (file.isHidden() || hasHiddenAncestorDirectory(file));
+    }
+
+    // Extract the condition for checking if hidden files should be included
+    private boolean isIncludeHiddenFilesEnabled() {
+        return this.importConfigProperties.getFiles().isIncludeHiddenFiles();
+    }
+
+    // Extract the condition for checking if the file has a hidden ancestor directory
+    private boolean hasHiddenAncestorDirectory(File file) {
+        File parent = file.getParentFile();
+        while (parent != null) {
+            if (parent.isHidden()) {
+                return true;
+            }
+            parent = parent.getParentFile();
+        }
+        return false;
+    }
+
     private boolean filterExcludedResources(Resource resource) {
         if (!resource.isFile()) {
             return true;
@@ -149,7 +171,7 @@ public class KeycloakImportProvider {
             return false;
         }
 
-        if (!this.importConfigProperties.getFiles().isIncludeHiddenFiles() && (file.isHidden() || FileUtils.hasHiddenAncestorDirectory(file))) {
+        if (shouldIncludeFile(file)) {
             return false;
         }
 

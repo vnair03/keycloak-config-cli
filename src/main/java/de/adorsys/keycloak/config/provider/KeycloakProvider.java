@@ -75,7 +75,6 @@ public class KeycloakProvider implements AutoCloseable {
     public Keycloak getInstance() {
         if (keycloak == null || keycloak.isClosed()) {
             keycloak = createKeycloak();
-
             checkServerVersion();
         }
 
@@ -175,16 +174,6 @@ public class KeycloakProvider implements AutoCloseable {
         }
     }
 
-    @Override
-    public void close() {
-        if (!isClosed()) {
-            logout();
-            keycloak.close();
-        }
-    }
-
-    // see: https://github.com/keycloak/keycloak/blob/8ea09d38168c22937363cf77a07f9de5dc7b48b0/services/src/main/java/org/keycloak/protocol/oidc/endpoints/LogoutEndpoint.java#L207-L220
-
     /**
      * Logout a session via a non-browser invocation.  Similar signature to refresh token except there is no grant_type.
      * You must pass in the refresh token and
@@ -228,6 +217,17 @@ public class KeycloakProvider implements AutoCloseable {
             }
         }
     }
+
+
+    @Override
+    public void close() {
+        if (!isClosed()) {
+            logout();
+            keycloak.close();
+        }
+    }
+
+    // ... Rest of the class
 
     public boolean isClosed() {
         return keycloak == null || keycloak.isClosed();

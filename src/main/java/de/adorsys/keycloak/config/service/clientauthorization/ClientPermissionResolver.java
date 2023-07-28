@@ -23,6 +23,7 @@ package de.adorsys.keycloak.config.service.clientauthorization;
 import de.adorsys.keycloak.config.exception.ImportProcessingException;
 import de.adorsys.keycloak.config.exception.KeycloakRepositoryException;
 import de.adorsys.keycloak.config.repository.ClientRepository;
+import de.adorsys.keycloak.config.repository.PermissionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +33,13 @@ public class ClientPermissionResolver implements PermissionResolver {
     private static final Logger logger = LoggerFactory.getLogger(ClientPermissionResolver.class);
 
     private final String realmName;
+    private final PermissionRepository permissionRepository;
+
     private final ClientRepository clientRepository;
 
-    public ClientPermissionResolver(String realmName, ClientRepository clientRepository) {
+    public ClientPermissionResolver(String realmName, ClientRepository clientRepository, PermissionRepository permissionRepository) {
         this.realmName = realmName;
+        this.permissionRepository = permissionRepository;
         this.clientRepository = clientRepository;
     }
 
@@ -51,9 +55,9 @@ public class ClientPermissionResolver implements PermissionResolver {
     @Override
     public void enablePermissions(String id) {
         try {
-            if (!clientRepository.isPermissionEnabled(realmName, id)) {
+            if (!permissionRepository.isPermissionEnabled(realmName, id)) {
                 logger.debug("Enable permissions for client '{}' in realm '{}'", id, realmName);
-                clientRepository.enablePermission(realmName, id);
+                permissionRepository.enablePermission(realmName, id);
             }
         } catch (NotFoundException e) {
             throw new ImportProcessingException("Cannot find client with id '%s' in realm '%s'", id, realmName);

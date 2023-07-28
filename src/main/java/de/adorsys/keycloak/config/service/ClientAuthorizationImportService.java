@@ -23,10 +23,7 @@ package de.adorsys.keycloak.config.service;
 import de.adorsys.keycloak.config.exception.ImportProcessingException;
 import de.adorsys.keycloak.config.model.RealmImport;
 import de.adorsys.keycloak.config.properties.ImportConfigProperties;
-import de.adorsys.keycloak.config.repository.ClientRepository;
-import de.adorsys.keycloak.config.repository.GroupRepository;
-import de.adorsys.keycloak.config.repository.IdentityProviderRepository;
-import de.adorsys.keycloak.config.repository.RoleRepository;
+import de.adorsys.keycloak.config.repository.*;
 import de.adorsys.keycloak.config.service.clientauthorization.*;
 import de.adorsys.keycloak.config.service.state.StateService;
 import de.adorsys.keycloak.config.util.CloneUtil;
@@ -67,6 +64,10 @@ public class ClientAuthorizationImportService {
     private final ImportConfigProperties importConfigProperties;
     private final StateService stateService;
 
+    private final AuthorizationRepository authorizationRepository;
+
+    private final PermissionRepository permissionRepository;
+
     @Autowired
     public ClientAuthorizationImportService(
             ClientRepository clientRepository,
@@ -74,7 +75,9 @@ public class ClientAuthorizationImportService {
             RoleRepository roleRepository,
             GroupRepository groupRepository,
             ImportConfigProperties importConfigProperties,
-            StateService stateService
+            StateService stateService,
+            AuthorizationRepository authorizationRepository,
+            PermissionRepository permissionRepository
     ) {
         this.clientRepository = clientRepository;
         this.identityProviderRepository = identityProviderRepository;
@@ -82,6 +85,9 @@ public class ClientAuthorizationImportService {
         this.groupRepository = groupRepository;
         this.importConfigProperties = importConfigProperties;
         this.stateService = stateService;
+        this.authorizationRepository = authorizationRepository;
+        this.permissionRepository = permissionRepository;
+
     }
 
     public void doImport(RealmImport realmImport) {
@@ -135,7 +141,7 @@ public class ClientAuthorizationImportService {
             realmManagementPermissionsResolver.createFineGrantedPermissions(authorizationSettingsToImport);
         }
 
-        ResourceServerRepresentation existingAuthorization = clientRepository.getAuthorizationConfigById(
+        ResourceServerRepresentation existingAuthorization = authorizationRepository.getAuthorizationConfigById(
                 realmName, client.getId()
         );
 
@@ -157,7 +163,7 @@ public class ClientAuthorizationImportService {
         removeAuthorizationScopes(realmName, client, existingAuthorization.getScopes(), authorizationSettingsToImport.getScopes());
 
         // refresh existingAuthorization
-        existingAuthorization = clientRepository.getAuthorizationConfigById(
+        existingAuthorization = authorizationRepository.getAuthorizationConfigById(
                 realmName, client.getId()
         );
 
@@ -226,7 +232,7 @@ public class ClientAuthorizationImportService {
 
         patchedAuthorizationSettings.setId(client.getClientId());
         logger.debug("Update authorization settings for client '{}' in realm '{}'", getClientIdentifier(client), realmName);
-        clientRepository.updateAuthorizationSettings(realmName, client.getId(), patchedAuthorizationSettings);
+        authorizationRepository.updateAuthorizationSettings(realmName, client.getId(), patchedAuthorizationSettings);
     }
 
     private void createOrUpdateAuthorizationResources(
@@ -269,7 +275,7 @@ public class ClientAuthorizationImportService {
         logger.debug("Create authorization resource '{}' for client '{}' in realm '{}'",
                 authorizationResourceToImport.getName(), getClientIdentifier(client), realmName);
 
-        clientRepository.createAuthorizationResource(realmName, client.getId(), authorizationResourceToImport);
+        authorizationRepository.createAuthorizationResource(realmName, client.getId(), authorizationResourceToImport);
     }
 
     private void updateAuthorizationResource(
@@ -304,7 +310,7 @@ public class ClientAuthorizationImportService {
         logger.debug("Update authorization resource '{}' for client '{}' in realm '{}'",
                 authorizationResourceToImport.getName(), getClientIdentifier(client), realmName);
 
-        clientRepository.updateAuthorizationResource(realmName, client.getId(), authorizationResourceToImport);
+        authorizationRepository.updateAuthorizationResource(realmName, client.getId(), authorizationResourceToImport);
     }
 
     private void removeAuthorizationResources(
@@ -332,7 +338,7 @@ public class ClientAuthorizationImportService {
         logger.debug("Remove authorization resource '{}' for client '{}' in realm '{}'",
                 existingClientAuthorizationResource.getName(), getClientIdentifier(client), realmName
         );
-        clientRepository.removeAuthorizationResource(
+        authorizationRepository.removeAuthorizationResource(
                 realmName, client.getId(), existingClientAuthorizationResource.getId()
         );
     }
@@ -365,7 +371,7 @@ public class ClientAuthorizationImportService {
             logger.debug("Add authorization scope '{}' for client '{}' in realm '{}'",
                     authorizationScopeNameToImport, getClientIdentifier(client), realmName
             );
-            clientRepository.addAuthorizationScope(
+            authorizationRepository.addAuthorizationScope(
                     realmName, client.getId(), authorizationScopeNameToImport
             );
         } else {
@@ -391,7 +397,7 @@ public class ClientAuthorizationImportService {
             logger.debug("Update authorization scope '{}' for client '{}' in realm '{}'",
                     authorizationScopeNameToImport, getClientIdentifier(client), realmName);
 
-            clientRepository.updateAuthorizationScope(realmName, client.getId(), authorizationScopeToImport);
+            authorizationRepository.updateAuthorizationScope(realmName, client.getId(), authorizationScopeToImport);
         }
     }
 
@@ -420,7 +426,7 @@ public class ClientAuthorizationImportService {
         logger.debug("Remove authorization scope '{}' for client '{}' in realm '{}'",
                 existingClientAuthorizationScope.getName(), getClientIdentifier(client), realmName);
 
-        clientRepository.removeAuthorizationScope(realmName, client.getId(), existingClientAuthorizationScope.getId());
+        authorizationRepository.removeAuthorizationScope(realmName, client.getId(), existingClientAuthorizationScope.getId());
     }
 
     private void createOrUpdateAuthorizationPolicies(
@@ -450,7 +456,7 @@ public class ClientAuthorizationImportService {
             logger.debug("Create authorization policy '{}' for client '{}' in realm '{}'",
                     authorizationPolicyToImport.getName(), getClientIdentifier(client), realmName);
 
-            clientRepository.createAuthorizationPolicy(
+            authorizationRepository.createAuthorizationPolicy(
                     realmName, client.getId(), authorizationPolicyToImport
             );
         } else {
@@ -476,7 +482,7 @@ public class ClientAuthorizationImportService {
                     "Update authorization policy '{}' for client '{}' in realm '{}'",
                     authorizationPolicyToImport.getName(), getClientIdentifier(client), realmName
             );
-            clientRepository.updateAuthorizationPolicy(realmName, client.getId(), authorizationPolicyToImport);
+            authorizationRepository.updateAuthorizationPolicy(realmName, client.getId(), authorizationPolicyToImport);
         }
     }
 
@@ -508,7 +514,7 @@ public class ClientAuthorizationImportService {
         );
 
         try {
-            clientRepository.removeAuthorizationPolicy(
+            authorizationRepository.removeAuthorizationPolicy(
                     realmName, client.getId(), existingClientAuthorizationPolicy.getId()
             );
         } catch (NotFoundException ignored) {
@@ -553,7 +559,7 @@ public class ClientAuthorizationImportService {
             this.realmName = realmName;
             this.resolvers = new HashMap<>();
 
-            resolvers.put("client", new ClientPermissionResolver(realmName, clientRepository));
+            resolvers.put("client", new ClientPermissionResolver(realmName, clientRepository, permissionRepository));
             resolvers.put("idp", new IdpPermissionResolver(realmName, identityProviderRepository));
             resolvers.put("role", new RolePermissionResolver(realmName, roleRepository));
             resolvers.put("group", new GroupPermissionResolver(realmName, groupRepository));
