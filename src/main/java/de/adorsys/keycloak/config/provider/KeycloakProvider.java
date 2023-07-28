@@ -227,8 +227,6 @@ public class KeycloakProvider implements AutoCloseable {
         }
     }
 
-    // ... Rest of the class
-
     public boolean isClosed() {
         return keycloak == null || keycloak.isClosed();
     }
