@@ -562,7 +562,7 @@ public class ClientAuthorizationImportService {
             resolvers.put("client", new ClientPermissionResolver(realmName, clientRepository, permissionRepository));
             resolvers.put("idp", new IdpPermissionResolver(realmName, identityProviderRepository));
             resolvers.put("role", new RolePermissionResolver(realmName, roleRepository));
-            resolvers.put("group", new GroupPermissionResolver(realmName, groupRepository));
+            resolvers.put("group", new GroupPermissionResolver(realmName, groupRepository, permissionRepository));
         }
 
         public void createFineGrantedPermissions(ResourceServerRepresentation authorizationSettingsToImport) {

@@ -23,6 +23,7 @@ package de.adorsys.keycloak.config.service.clientauthorization;
 import de.adorsys.keycloak.config.exception.ImportProcessingException;
 import de.adorsys.keycloak.config.exception.KeycloakRepositoryException;
 import de.adorsys.keycloak.config.repository.GroupRepository;
+import de.adorsys.keycloak.config.repository.PermissionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +35,13 @@ public class GroupPermissionResolver implements PermissionResolver {
     private final String realmName;
     private final GroupRepository groupRepository;
 
-    public GroupPermissionResolver(String realmName, GroupRepository groupRepository) {
+    private final PermissionRepository permissionRepository;
+
+
+    public GroupPermissionResolver(String realmName, GroupRepository groupRepository, PermissionRepository permissionRepository) {
         this.realmName = realmName;
         this.groupRepository = groupRepository;
+        this.permissionRepository = permissionRepository;
     }
 
     @Override
@@ -51,9 +56,9 @@ public class GroupPermissionResolver implements PermissionResolver {
     @Override
     public void enablePermissions(String id) {
         try {
-            if (!groupRepository.isPermissionEnabled(realmName, id)) {
+            if (!permissionRepository.isGroupPermissionEnabled(realmName, id)) {
                 logger.debug("Enable permissions for client '{}' in realm '{}'", id, realmName);
-                groupRepository.enablePermission(realmName, id);
+                permissionRepository.enableGroupPermission(realmName, id);
             }
         } catch (NotFoundException e) {
             throw new ImportProcessingException("Cannot find group with id '%s' in realm '%s'", id, realmName);

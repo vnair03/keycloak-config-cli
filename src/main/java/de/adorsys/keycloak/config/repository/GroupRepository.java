@@ -29,7 +29,6 @@ import org.keycloak.admin.client.resource.RoleScopeResource;
 import org.keycloak.admin.client.resource.UserResource;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.GroupRepresentation;
-import org.keycloak.representations.idm.ManagementPermissionRepresentation;
 import org.keycloak.representations.idm.RoleRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -210,18 +209,6 @@ public class GroupRepository {
         return realmRepository.getResource(realmName).getGroupByPath(groupPath);
     }
 
-    public void enablePermission(String realmName, String id) {
-        GroupResource groupResource = getResourceById(realmName, id);
-
-        groupResource.setPermissions(new ManagementPermissionRepresentation(true));
-    }
-
-    public boolean isPermissionEnabled(String realmName, String id) {
-        GroupResource groupResource = getResourceById(realmName, id);
-
-        return groupResource.getPermissions().isEnabled();
-    }
-
     private GroupResource getResourceByName(String realmName, String groupName) {
         Optional<GroupRepresentation> maybeGroup = searchByName(realmName, groupName);
 
@@ -234,7 +221,7 @@ public class GroupRepository {
         return getResourceById(realmName, existingGroup.getId());
     }
 
-    private GroupResource getResourceById(String realmName, String groupId) {
+    public GroupResource getResourceById(String realmName, String groupId) {
         return realmRepository.getResource(realmName)
                 .groups()
                 .group(groupId);

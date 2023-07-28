@@ -21,16 +21,20 @@
 package de.adorsys.keycloak.config.repository;
 
 import org.keycloak.admin.client.resource.ClientResource;
+import org.keycloak.admin.client.resource.GroupResource;
 import org.keycloak.representations.idm.ManagementPermissionRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 public class PermissionRepository {
 
     private final ClientRepository clientRepository;
+    private final GroupRepository groupRepository;
 
     @Autowired
-    public PermissionRepository(ClientRepository clientRepository) {
+    public PermissionRepository(ClientRepository clientRepository, GroupRepository groupRepository) {
         this.clientRepository = clientRepository;
+        this.groupRepository = groupRepository;
     }
 
     public void enablePermission(String realmName, String id) {
@@ -44,4 +48,18 @@ public class PermissionRepository {
 
         return clientResource.getPermissions().isEnabled();
     }
+
+
+    public void enableGroupPermission(String realmName, String id) {
+        GroupResource groupResource = groupRepository.getResourceById(realmName, id);
+
+        groupResource.setPermissions(new ManagementPermissionRepresentation(true));
+    }
+
+    public boolean isGroupPermissionEnabled(String realmName, String id) {
+        GroupResource groupResource = groupRepository.getResourceById(realmName, id);
+
+        return groupResource.getPermissions().isEnabled();
+    }
+
 }
